@@ -23,7 +23,7 @@ class CreateRequest extends FormRequest
     {
         return [
             "code" => "required|string",
-            "discount_amount" => "required|decimal",
+            "discount_amount" => "required|integer",
             "expires_at" => "nullable|date",
             "used" => "required|boolean",
         ];
