@@ -11,7 +11,7 @@ class UpdateRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,7 +23,7 @@ class UpdateRequest extends FormRequest
     {
         return [
             "code" => "nullable|string",
-            "discount_amount" => "nullable|decimal",
+            "discount_amount" => "nullable|numeric|between:0,100",
             "expires_at" => "nullable|date",
             "used" => "nullable|boolean",
         ];

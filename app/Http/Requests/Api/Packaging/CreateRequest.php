@@ -22,7 +22,7 @@ class CreateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "product_id" => "required|int|exists:product,id",
+            "product_id" => "required|int|exists:products,id",
             "volume" => "required|int|between:1,100",
             "price" => "required|decimal",
         ];

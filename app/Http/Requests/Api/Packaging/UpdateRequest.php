@@ -22,9 +22,9 @@ class UpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "product_id" => "nullable|int|exists:product,id",
+            "product_id" => "nullable|int|exists:products,id",
             "volume" => "nullable|int|between:1,100",
-            "price" => "nullable|decimal",
+            "price" => "nullable|numeric|min:0",
         ];
     }
 }
