@@ -1,0 +1,89 @@
+services:
+    dashd-testnet:
+        image: dashpay/dashd:latest
+        container_name: dashd-testnet
+        restart: unless-stopped
+        environment:
+            - TESTNET=1
+        volumes:
+            # Единый том, где хранятся блоки, кошельки и конфиг
+            - dashd-testnet-data:/home/dash/.dashcore
+            # Опционально: если хотите править dash.conf из ~/dash-node/config/
+            - ./dash-node/config/dash.conf:/home/dash/.dashcore/dash.conf:ro
+        ports:
+            - "19999:19999"
+            - "19998:19998"
+        command:
+            - dashd
+            - -testnet
+            - -wallet=test_wallet
+            - -datadir=/home/dash/.dashcore
+            - -rpcbind=0.0.0.0
+            - -rpcallowip=0.0.0.0/0
+            - -printtoconsole
+    app:
+        image: php-fpm:8.2
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: laravel-app
+        restart: unless-stopped
+        working_dir: /var/www/html
+        volumes:
+            - ./:/var/www/html
+        depends_on:
+            - db
+
+    db:
+        image: mysql:8.0
+        container_name: laravel-db
+        restart: unless-stopped
+        ports:
+            -   "3306:3306"
+        environment:
+            MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+            MYSQL_DATABASE: ${DB_DATABASE}
+            MYSQL_USER: ${DB_USERNAME}
+            MYSQL_PASSWORD: ${DB_PASSWORD}
+        volumes:
+            - dbdata:/var/lib/mysql
+
+    nginx:
+        image: nginx:alpine
+        container_name: laravel-nginx
+        restart: unless-stopped
+        ports:
+            - "8080:80"
+        volumes:
+            - ./:/var/www/html
+            - ./nginx/conf.d:/etc/nginx/conf.d
+        depends_on:
+            - app
+    client_bot:
+        build:
+            context: .
+            dockerfile: bots/Dockerfile
+        container_name: client_bot
+        restart: unless-stopped
+        environment:
+            - BOT_MODE=client
+            - TELEGRAM_BOT_TOKEN=${CLIENT_BOT_TOKEN}
+            - API_BASE_URL=http://138.124.123.68:8080/api
+
+
+    admin_bot:
+        build:
+            context: .
+            dockerfile: bots/Dockerfile
+        container_name: admin_bot
+        restart: unless-stopped
+        environment:
+            - BOT_MODE=admin
+            - TELEGRAM_BOT_TOKEN=${ADMIN_BOT_TOKEN}
+            - API_BASE_URL=http://138.124.123.68:8080/api
+
+volumes:
+    dashd-testnet-data:
+        driver: local
+    dbdata:
+        driver: local
